@@ -106,18 +106,6 @@ flowchart LR
 
 ```
 
-```mermaid
-flowchart LR
-  API["API Gateway"] --> Auth["Auth MS"]
-  API --> Cardapio["Cardápio MS"]
-  API --> Pedidos["Pedidos MS"]
-  Pedidos -->|PedidoCriado| MQ(("RabbitMQ"))
-  Pedidos -->|PedidoCancelado| MQ
-  MQ --> Cozinha["Cozinha MS"]
-  Cozinha -->|PedidoAceito| MQ
-  Cozinha -->|PedidoRecusado| MQ
-```
-
 # Justificativa Técnica das Decisões Arquiteturais
 
 ## 1. Arquitetura em microsserviços
