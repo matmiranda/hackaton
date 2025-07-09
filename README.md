@@ -76,8 +76,7 @@ flowchart LR
 
   subgraph Infraestrutura
     API["API Gateway"]
-    MQ[(RabbitMQ)]
-    Zabbix
+    MQ[(RabbitMQ/Kafka)]
     Prometheus
     Grafana
   end
@@ -100,9 +99,9 @@ flowchart LR
   KitchenMS --> KitchenDB
 
   %% Observabilidade
-  Zabbix -->|health checks| AuthMS & CardMS & PedMS & KitchenMS
   Prometheus -->|metrics| AuthMS & CardMS & PedMS & KitchenMS
   Grafana -->|dashboards| Prometheus
+
 
 ```
 
