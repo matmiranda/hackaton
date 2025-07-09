@@ -129,19 +129,16 @@ flowchart LR
 
 ## 5. Observabilidade Integrada
 
-- Zabbix para monitoramento de saúde e alertas  
 - Grafana + Prometheus para métricas de performance  
 - Dashboards customizáveis e thresholds automáticos  
 
 ## 6. CI/CD Automatizado
 
-- Pipeline único: build, testes (unitários, integração e segurança)  
-- Deploy contínuo com rollback automático em falhas  
+- Pipeline único: build, testes (unitários, integração e segurança)    
 
 ## 7. Persistência por Contexto
 
 - Bancos SQL isolados para consistência transacional  
-- Opção futura de NoSQL para consultas de catálogo e históricos  
 
 ## 8. Segurança e Compliance
 
