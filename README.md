@@ -54,12 +54,15 @@ O MVP é composto por quatro microsserviços independentes, containerizados e or
 
 ```mermaid
 flowchart LR
-  API[API Gateway] --> Auth
-  API --> Cardapio
-  API --> Pedidos
-  Pedidos -->|PedidoCriado| MQ((RabbitMQ))
-  MQ --> Cozinha
+  API["API Gateway"] --> Auth["Auth MS"]
+  API --> Cardapio["Cardápio MS"]
+  API --> Pedidos["Pedidos MS"]
+  Pedidos -->|PedidoCriado| MQ(("RabbitMQ"))
+  Pedidos -->|PedidoCancelado| MQ
+  MQ --> Cozinha["Cozinha MS"]
   Cozinha -->|PedidoAceito| MQ
+  Cozinha -->|PedidoRecusado| MQ
+
 
 
 ```ascii
