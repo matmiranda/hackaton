@@ -4,7 +4,7 @@
 
 - [Desenho da Solução MVP](#desenho-da-solução-mvp)  
 - [Diagrama da Arquitetura da Solução (DDD)](#diagrama-da-arquitetura-da-solução-ddd)  
-- [Justificativa Técnica das Decisões Arquiteturais](#justificativa-técnica-das-decisoes-arquiteturais)
+- [Justificativa Técnica das Decisões Arquiteturais](#justificativa-técnica-das-decisões-arquiteturais)
 
 ---
 
