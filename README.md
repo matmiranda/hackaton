@@ -155,24 +155,6 @@ Para atender à comunicação assíncrona entre microsserviços (via RabbitMQ ou
 
 ---
 
-## 🔵 Producers
-
-| Microsserviço | Eventos Produzidos               | Descrição                                                            |
-|---------------|----------------------------------|----------------------------------------------------------------------|
-| **Pedidos MS**| `PedidoCriado`<br>`PedidoCancelado` | Publica quando o cliente confirma ou cancela um pedido (antes do preparo). |
-| **Cozinha MS**| `PedidoAceito`<br>`PedidoRecusado`  | Emite decisão da cozinha sobre cada pedido recebido.                 |
-
----
-
-## 🟢 Consumers
-
-| Microsserviço | Eventos Consumidos               | Descrição                                                                 |
-|---------------|----------------------------------|---------------------------------------------------------------------------|
-| **Cozinha MS**| `PedidoCriado`<br>`PedidoCancelado` | Recebe novos pedidos ou cancelamentos para processar aceite ou recusa.    |
-| **Pedidos MS**| `PedidoAceito`<br>`PedidoRecusado`  | Atualiza o status do pedido conforme resposta da cozinha.                 |
-
----
-
 ## Detalhamento dos Microsserviços
 
 A seguir, a função, principais endpoints, persistência e eventos de cada microsserviço do MVP.
