@@ -6,6 +6,7 @@
 - [Diagrama da Arquitetura da Solução (DDD)](#diagrama-da-arquitetura-da-solução-ddd)  
 - [Justificativa Técnica das Decisões Arquiteturais](#justificativa-técnica-das-decisões-arquiteturais)
 - [Detalhamento dos microsserviços](#detalhamento-dos-microsserviços)
+- [Script Mysql](#script-mysql--fasttech-foods)
 
 ---
 
