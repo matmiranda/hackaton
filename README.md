@@ -119,4 +119,29 @@ Observability                  CI/CD
 
 - JWT para autenticação stateless  
 - Criptografia em repouso e em trânsito  
-- Role-based Access Control (RBAC) no Gateway  
+- Role-based Access Control (RBAC) no Gateway
+
+# Producers e Consumers
+
+Para atender à comunicação assíncrona entre microsserviços (via RabbitMQ ou Kafka), definimos quais serviços publicam (`Producers`) e quais escutam (`Consumers`) cada tipo de evento.
+
+---
+
+## 🔵 Producers
+
+| Microsserviço | Eventos Produzidos               | Descrição                                                            |
+|---------------|----------------------------------|----------------------------------------------------------------------|
+| **Pedidos MS**| `PedidoCriado`<br>`PedidoCancelado` | Publica quando o cliente confirma ou cancela um pedido (antes do preparo). |
+| **Cozinha MS**| `PedidoAceito`<br>`PedidoRecusado`  | Emite decisão da cozinha sobre cada pedido recebido.                 |
+
+---
+
+## 🟢 Consumers
+
+| Microsserviço | Eventos Consumidos               | Descrição                                                                 |
+|---------------|----------------------------------|---------------------------------------------------------------------------|
+| **Cozinha MS**| `PedidoCriado`<br>`PedidoCancelado` | Recebe novos pedidos ou cancelamentos para processar aceite ou recusa.    |
+| **Pedidos MS**| `PedidoAceito`<br>`PedidoRecusado`  | Atualiza o status do pedido conforme resposta da cozinha.                 |
+
+---
+
