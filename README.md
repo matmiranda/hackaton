@@ -255,17 +255,11 @@ Eventos
 
 ## Script MySQL – FastTech Foods
 
+## Script de Criação de Tabelas
+
 ```sql
--- #############################################
--- # MySQL Script: FastTech Foods – Microsserviços
--- #############################################
-
--- 1. Auth MS Database & Tables
--- -----------------------------
-CREATE DATABASE IF NOT EXISTS auth_db
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE auth_db;
-
+-- 1. Auth MS Tables
+-- -----------------
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
@@ -286,12 +280,8 @@ CREATE TABLE IF NOT EXISTS refresh_tokens (
 ) ENGINE=InnoDB;
 
 
--- 2. Cardápio MS Database & Tables
--- ---------------------------------
-CREATE DATABASE IF NOT EXISTS cardapio_db
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE cardapio_db;
-
+-- 2. Cardápio MS Tables
+-- ---------------------
 CREATE TABLE IF NOT EXISTS menu_items (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
@@ -304,12 +294,8 @@ CREATE TABLE IF NOT EXISTS menu_items (
 ) ENGINE=InnoDB;
 
 
--- 3. Pedidos MS Database & Tables
--- --------------------------------
-CREATE DATABASE IF NOT EXISTS pedidos_db
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE pedidos_db;
-
+-- 3. Pedidos MS Tables
+-- --------------------
 CREATE TABLE IF NOT EXISTS orders (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   customer_id BIGINT UNSIGNED NOT NULL,
@@ -318,10 +304,7 @@ CREATE TABLE IF NOT EXISTS orders (
   status ENUM('PENDENTE','EM_PREPARO','PRONTO','CANCELADO') NOT NULL DEFAULT 'PENDENTE',
   cancel_reason TEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (customer_id)
-    REFERENCES auth_db.users(id)
-    ON DELETE RESTRICT
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS order_items (
@@ -330,27 +313,20 @@ CREATE TABLE IF NOT EXISTS order_items (
   menu_item_id BIGINT UNSIGNED NOT NULL,
   quantity INT UNSIGNED NOT NULL CHECK (quantity > 0),
   price_at_order DECIMAL(10,2) NOT NULL CHECK (price_at_order >= 0),
-  total_item DECIMAL(10,2) 
-    GENERATED ALWAYS AS (quantity * price_at_order) STORED,
+  total_item DECIMAL(10,2) GENERATED ALWAYS AS (quantity * price_at_order) STORED,
   FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 
--- 4. Cozinha MS Database & Tables
--- --------------------------------
-CREATE DATABASE IF NOT EXISTS cozinha_db
-  CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE cozinha_db;
-
+-- 4. Cozinha MS Tables
+-- --------------------
 CREATE TABLE IF NOT EXISTS kitchen_orders (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_id BIGINT UNSIGNED NOT NULL,
   status ENUM('PENDENTE','ACEITO','RECUSADO') NOT NULL DEFAULT 'PENDENTE',
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (order_id)
-    REFERENCES pedidos_db.orders(id)
-    ON DELETE CASCADE
+  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
 
 CREATE TABLE IF NOT EXISTS decision_logs (
@@ -361,6 +337,7 @@ CREATE TABLE IF NOT EXISTS decision_logs (
   decided_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (kitchen_order_id) REFERENCES kitchen_orders(id) ON DELETE CASCADE
 ) ENGINE=InnoDB;
+
 ```
 
 
