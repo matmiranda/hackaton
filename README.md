@@ -52,13 +52,14 @@ O MVP é composto por quatro microsserviços independentes, containerizados e or
 
 ## Diagrama da Arquitetura da Solução (DDD)
 
+```mermaid
 flowchart LR
   API[API Gateway] --> Auth
   API --> Cardapio
-  Cardapio --> Pedidos
-  Pedidos --> Cozinha
+  API --> Pedidos
   Pedidos -->|PedidoCriado| MQ((RabbitMQ))
   MQ --> Cozinha
+  Cozinha -->|PedidoAceito| MQ
 
 
 ```ascii
