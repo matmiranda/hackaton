@@ -54,6 +54,60 @@ O MVP é composto por quatro microsserviços independentes, containerizados e or
 
 ```mermaid
 flowchart LR
+  subgraph "Contexto: Autenticação"
+    AuthMS["Auth MS"]
+    AuthDB[(Auth DB)]
+  end
+
+  subgraph "Contexto: Cardápio"
+    CardMS["Cardápio MS"]
+    CardDB[(Cardápio DB)]
+  end
+
+  subgraph "Contexto: Pedidos"
+    PedMS["Pedidos MS"]
+    PedDB[(Pedidos DB)]
+  end
+
+  subgraph "Contexto: Cozinha"
+    KitchenMS["Cozinha MS"]
+    KitchenDB[(Cozinha DB)]
+  end
+
+  subgraph Infraestrutura
+    API["API Gateway"]
+    MQ[(RabbitMQ)]
+    Zabbix
+    Prometheus
+    Grafana
+  end
+
+  %% Fluxo de requisições
+  API --> AuthMS
+  API --> CardMS
+  API --> PedMS
+
+  %% Event Bus
+  PedMS -->|PedidoCriado / PedidoCancelado| MQ
+  MQ --> KitchenMS
+  KitchenMS -->|PedidoAceito / PedidoRecusado| MQ
+  MQ --> PedMS
+
+  %% Persistência
+  AuthMS --> AuthDB
+  CardMS --> CardDB
+  PedMS --> PedDB
+  KitchenMS --> KitchenDB
+
+  %% Observabilidade
+  Zabbix -->|health checks| AuthMS & CardMS & PedMS & KitchenMS
+  Prometheus -->|metrics| AuthMS & CardMS & PedMS & KitchenMS
+  Grafana -->|dashboards| Prometheus
+
+```
+
+```mermaid
+flowchart LR
   API["API Gateway"] --> Auth["Auth MS"]
   API --> Cardapio["Cardápio MS"]
   API --> Pedidos["Pedidos MS"]
