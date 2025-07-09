@@ -255,8 +255,6 @@ Eventos
 
 ## Script MySQL – FastTech Foods
 
-## Script de Criação de Tabelas
-
 ```sql
 -- 1. Usuários (Auth MS)
 CREATE TABLE IF NOT EXISTS users (
