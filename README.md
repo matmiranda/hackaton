@@ -149,10 +149,6 @@ flowchart LR
 - Criptografia em repouso e em trânsito  
 - Role-based Access Control (RBAC) no Gateway
 
-# Producers e Consumers
-
-Para atender à comunicação assíncrona entre microsserviços (via RabbitMQ ou Kafka), definimos quais serviços publicam (`Producers`) e quais escutam (`Consumers`) cada tipo de evento.
-
 ---
 
 ## Detalhamento dos Microsserviços
