@@ -62,6 +62,7 @@ flowchart LR
   MQ --> Cozinha["Cozinha MS"]
   Cozinha -->|PedidoAceito| MQ
   Cozinha -->|PedidoRecusado| MQ
+```
 
 
 
