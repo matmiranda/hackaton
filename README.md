@@ -43,7 +43,6 @@ O MVP é composto por quatro microsserviços independentes, containerizados e or
   - Tópicos para notificações em tempo real  
 
 - **Observabilidade**  
-  - Zabbix para health checks e alertas  
   - Prometheus Exporter + Grafana para métricas e dashboards  
 
 - **CI/CD**  
@@ -169,7 +168,7 @@ Endpoints
 - `POST /api/auth/logout` → invalida refresh token  
 
 Persistência  
-- Banco SQL (por exemplo, SQL Server)  
+- Banco SQL (por exemplo, Mysql)  
 - Tabela `Users` (camada de identidade)  
 - Tabela `RefreshTokens`  
 
