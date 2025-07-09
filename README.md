@@ -256,18 +256,21 @@ Eventos
 ## Script MySQL – FastTech Foods
 
 ```sql
--- 1. Usuários (Auth MS)
+-- 1. Usuários (autenticação)
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   email VARCHAR(255) NOT NULL UNIQUE,
   cpf CHAR(11) UNIQUE,
   password_hash VARCHAR(255) NOT NULL,
-  role ENUM('FUNCIONARIO','CLIENTE') NOT NULL,
+  role ENUM('CLIENTE','ATENDENTE','GERENTE','COZINHEIRO') NOT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at TIMESTAMP NOT NULL 
+    DEFAULT CURRENT_TIMESTAMP 
+    ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB;
 
--- 2. Itens de Cardápio (Cardápio MS)
+
+-- 2. Itens de Cardápio
 CREATE TABLE IF NOT EXISTS menu_items (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(150) NOT NULL,
@@ -276,42 +279,69 @@ CREATE TABLE IF NOT EXISTS menu_items (
   meal_type ENUM('LANCHES','SOBREMESAS','BEBIDAS') NOT NULL,
   available BOOLEAN NOT NULL DEFAULT TRUE,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+  updated_at TIMESTAMP NOT NULL 
+    DEFAULT CURRENT_TIMESTAMP 
+    ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_menu_meal_type (meal_type)
 ) ENGINE=InnoDB;
 
--- 3. Pedidos (Pedidos & Cozinha MS)
+
+-- 3. Pedidos
 CREATE TABLE IF NOT EXISTS orders (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   customer_id BIGINT UNSIGNED NOT NULL,
-  delivery_method ENUM('BALCAO','DRIVE_THRU','DELIVERY') NOT NULL,
+  delivery_method 
+    ENUM('BALCAO','DRIVE_THRU','DELIVERY') NOT NULL,
   total DECIMAL(10,2) NOT NULL CHECK (total >= 0),
-  status ENUM(
-    'PENDENTE',
-    'EM_PREPARO',
-    'PRONTO',
-    'CANCELADO',
-    'ACEITO',
-    'RECUSADO'
-  ) NOT NULL DEFAULT 'PENDENTE',
+  status 
+    ENUM('PENDENTE','EM_PREPARO','PRONTO','CANCELADO') 
+    NOT NULL DEFAULT 'PENDENTE',
   cancel_reason TEXT NULL,
-  decision_justification TEXT NULL,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (customer_id) REFERENCES users(id) ON DELETE RESTRICT
+  updated_at TIMESTAMP NOT NULL 
+    DEFAULT CURRENT_TIMESTAMP 
+    ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (customer_id) 
+    REFERENCES users(id) 
+    ON DELETE RESTRICT,
+  INDEX idx_orders_status (status),
+  INDEX idx_orders_created (created_at)
 ) ENGINE=InnoDB;
 
--- 4. Itens do Pedido (Pedidos MS)
+
+-- 4. Itens do Pedido
 CREATE TABLE IF NOT EXISTS order_items (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_id BIGINT UNSIGNED NOT NULL,
   menu_item_id BIGINT UNSIGNED NOT NULL,
   quantity INT UNSIGNED NOT NULL CHECK (quantity > 0),
   price_at_order DECIMAL(10,2) NOT NULL CHECK (price_at_order >= 0),
-  total_item DECIMAL(10,2)
+  total_item DECIMAL(10,2) 
     GENERATED ALWAYS AS (quantity * price_at_order) STORED,
-  FOREIGN KEY (order_id) REFERENCES orders(id) ON DELETE CASCADE
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_id) 
+    REFERENCES orders(id) 
+    ON DELETE CASCADE,
+  FOREIGN KEY (menu_item_id) 
+    REFERENCES menu_items(id) 
+    ON DELETE RESTRICT,
+  INDEX idx_order_items_menu (menu_item_id),
+  INDEX idx_order_items_order (order_id)
 ) ENGINE=InnoDB;
 
+
+-- 5. Eventos da Cozinha (aceite ou recusa)
+CREATE TABLE IF NOT EXISTS kitchen_events (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id BIGINT UNSIGNED NOT NULL,
+  action ENUM('ACEITO','RECUSADO') NOT NULL,
+  justification TEXT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_id) 
+    REFERENCES orders(id) 
+    ON DELETE CASCADE,
+  INDEX idx_kitchen_events_order (order_id)
+) ENGINE=InnoDB;
 
 ```
 
