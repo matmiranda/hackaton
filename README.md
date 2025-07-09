@@ -4,8 +4,7 @@
 
 - [Desenho da Solução MVP](#desenho-da-solução-mvp)  
 - [Diagrama da Arquitetura da Solução (DDD)](#diagrama-da-arquitetura-da-solução-ddd)  
-- [Justificativa Técnica das Decisões Arquiteturais](#justificativa-técnica-das-decisoes-arquiteturais)  
-- [Próximos Passos e Sugestões de Evolução](#próximos-passos-e-sugestões-de-evolução)  
+- [Justificativa Técnica das Decisões Arquiteturais](#justificativa-técnica-das-decisoes-arquiteturais)
 
 ---
 
@@ -78,65 +77,46 @@ Observability                  CI/CD
 + Prometheus
 ```
 
-Justificativa Técnica das Decisões Arquiteturais
-Arquitetura em microsserviços
+# Justificativa Técnica das Decisões Arquiteturais
 
-Alta coesão e baixo acoplamento de domínios
+## 1. Arquitetura em microsserviços
 
-Deploys independentes e escalonamento granular
+- Alta coesão e baixo acoplamento de domínios  
+- Deploys independentes e escalonamento granular  
 
-Kubernetes para orquestração
+## 2. Kubernetes para orquestração
 
-Escalonamento automático e self-healing
+- Escalonamento automático, self-healing e rollouts sem downtime  
+- Homogeneidade entre ambientes de dev, staging e produção  
 
-Rolling updates sem downtime
+## 3. Mensageria Assíncrona
 
-Consistência entre ambientes de dev, staging e produção
+- Desacoplamento de produtores/consumidores (Pedidos ↔ Cozinha)  
+- Tolerância a falhas e retries sem impactar a API  
 
-Mensageria Assíncrona
+## 4. API Gateway
 
-Desacoplamento de produtores e consumidores (Pedidos ↔ Cozinha)
+- Centralização de segurança (autenticação e autorização)  
+- Roteamento e versionamento unificado de APIs  
 
-Garantia de entrega de eventos e retries automáticos
+## 5. Observabilidade Integrada
 
-Suporta picos de carga sem degradar APIs
+- Zabbix para monitoramento de saúde e alertas  
+- Grafana + Prometheus para métricas de performance  
+- Dashboards customizáveis e thresholds automáticos  
 
-API Gateway
+## 6. CI/CD Automatizado
 
-Centralização de políticas de autenticação e autorização
+- Pipeline único: build, testes (unitários, integração e segurança)  
+- Deploy contínuo com rollback automático em falhas  
 
-Roteamento dinâmico e versionamento de endpoints
+## 7. Persistência por Contexto
 
-Throttling e rate limiting integrados
+- Bancos SQL isolados para consistência transacional  
+- Opção futura de NoSQL para consultas de catálogo e históricos  
 
-Observabilidade Integrada
+## 8. Segurança e Compliance
 
-Zabbix para health checks, uptime e alertas críticos
-
-Prometheus + Grafana para coleta de métricas e dashboards customizáveis
-
-Alertas configuráveis por thresholds e regras de escalonamento
-
-CI/CD Automatizado
-
-Pipeline unificado: build, testes unitários/integrados, security scan
-
-Deploy contínuo com rollback automático em caso de falhas
-
-Gatilhos baseados em pull requests e branch policies
-
-Persistência por Contexto
-
-Bancos SQL isolados para cada microsserviço, garantindo ACID
-
-Evita compartilhamento de schema e flutuação de performance
-
-Possibilidade futura de adotar NoSQL para cache e consultas de alta velocidade
-
-Segurança e Compliance
-
-Autenticação stateless via JWT
-
-Criptografia de dados em trânsito (TLS) e em repouso
-
-Role-based Access Control (RBAC) aplicado no Gateway API
+- JWT para autenticação stateless  
+- Criptografia em repouso e em trânsito  
+- Role-based Access Control (RBAC) no Gateway  
