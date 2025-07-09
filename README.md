@@ -76,3 +76,67 @@ O MVP é composto por quatro microsserviços independentes, containerizados e or
 Observability                  CI/CD
 + Zabbix    + Grafana          + GitHub Actions
 + Prometheus
+```
+
+Justificativa Técnica das Decisões Arquiteturais
+Arquitetura em microsserviços
+
+Alta coesão e baixo acoplamento de domínios
+
+Deploys independentes e escalonamento granular
+
+Kubernetes para orquestração
+
+Escalonamento automático e self-healing
+
+Rolling updates sem downtime
+
+Consistência entre ambientes de dev, staging e produção
+
+Mensageria Assíncrona
+
+Desacoplamento de produtores e consumidores (Pedidos ↔ Cozinha)
+
+Garantia de entrega de eventos e retries automáticos
+
+Suporta picos de carga sem degradar APIs
+
+API Gateway
+
+Centralização de políticas de autenticação e autorização
+
+Roteamento dinâmico e versionamento de endpoints
+
+Throttling e rate limiting integrados
+
+Observabilidade Integrada
+
+Zabbix para health checks, uptime e alertas críticos
+
+Prometheus + Grafana para coleta de métricas e dashboards customizáveis
+
+Alertas configuráveis por thresholds e regras de escalonamento
+
+CI/CD Automatizado
+
+Pipeline unificado: build, testes unitários/integrados, security scan
+
+Deploy contínuo com rollback automático em caso de falhas
+
+Gatilhos baseados em pull requests e branch policies
+
+Persistência por Contexto
+
+Bancos SQL isolados para cada microsserviço, garantindo ACID
+
+Evita compartilhamento de schema e flutuação de performance
+
+Possibilidade futura de adotar NoSQL para cache e consultas de alta velocidade
+
+Segurança e Compliance
+
+Autenticação stateless via JWT
+
+Criptografia de dados em trânsito (TLS) e em repouso
+
+Role-based Access Control (RBAC) aplicado no Gateway API
