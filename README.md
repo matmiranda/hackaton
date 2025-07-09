@@ -258,9 +258,6 @@ Eventos
 ## Script de Criação de Tabelas
 
 ```sql
-## Script MySQL – Tabelas Simplificadas
-
-```sql
 -- 1. Usuários (Auth MS)
 CREATE TABLE IF NOT EXISTS users (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
