@@ -64,33 +64,6 @@ flowchart LR
   Cozinha -->|PedidoRecusado| MQ
 ```
 
-
-
-```ascii
-                   +--------------------+
-                   |     API Gateway    |
-                   +---------+----------+
-                             |
-  +--------------------------+-------------------------+
-  |                          |                         |
-+-----+    +---------+    +--------+    +-------------+
-| Auth|--->| Cardápio|--->| Pedidos|--->|  Cozinha    |
-| MS  |    |   MS    |    |   MS   |    |    MS       |
-+--+--+    +---------+    +---+----+    +------+------+
-   |                          |                 |
-   |    +---------------------+                 |
-   |    |                                       |
-   v    v                                       v
- Users DB (SQL)                               Kitchen DB (SQL)
-            \                                  /
-             \                                /
-          Events Topic (RabbitMQ / Kafka) ----
-
-Observability                  CI/CD
-+ Zabbix    + Grafana          + GitHub Actions
-+ Prometheus
-```
-
 # Justificativa Técnica das Decisões Arquiteturais
 
 ## 1. Arquitetura em microsserviços
