@@ -173,3 +173,105 @@ Para atender à comunicação assíncrona entre microsserviços (via RabbitMQ ou
 
 ---
 
+## Detalhamento dos Microsserviços
+
+A seguir, a função, principais endpoints, persistência e eventos de cada microsserviço do MVP.
+
+---
+
+### 1. Auth MS
+
+Responsabilidades  
+- Autenticação de funcionários (e-mail corporativo + senha) e clientes (CPF ou e-mail + senha)  
+- Emissão e validação de tokens JWT  
+- Refresh de tokens  
+
+Endpoints  
+- `POST /api/auth/login` → retorna access + refresh token  
+- `POST /api/auth/refresh` → gera novo access token  
+- `POST /api/auth/logout` → invalida refresh token  
+
+Persistência  
+- Banco SQL (por exemplo, SQL Server)  
+- Tabela `Users` (camada de identidade)  
+- Tabela `RefreshTokens`  
+
+Eventos  
+- Não produz nem consome eventos de domínio via MQ  
+
+---
+
+### 2. Cardápio MS
+
+Responsabilidades  
+- CRUD de itens de menu (nome, descrição, preço, disponibilidade)  
+- Validação de regras de negócio (preço ≥ 0, nome não vazio)  
+
+Endpoints  
+- `GET /api/cardapio` → lista itens com filtros (tipo de refeição)  
+- `GET /api/cardapio/{id}` → detalhes de item  
+- `POST /api/cardapio` → cria novo item  
+- `PUT /api/cardapio/{id}` → edita item existente  
+- `DELETE /api/cardapio/{id}` → desativa item  
+
+Persistência  
+- Banco SQL dedicado  
+- Tabela `MenuItems`  
+
+Eventos  
+- Não produz nem consome eventos de domínio via MQ  
+
+---
+
+### 3. Pedidos MS
+
+Responsabilidades  
+- Montagem, confirmação e cancelamento de pedidos  
+- Cálculo de total e validação de disponibilidade  
+- Publicação de eventos de pedido no barramento de mensagens  
+
+Endpoints  
+- `POST /api/pedidos` → cria pedido (Producer: `PedidoCriado`)  
+- `PATCH /api/pedidos/{id}/cancel` → cancela pedido (Producer: `PedidoCancelado`)  
+- `GET /api/pedidos/{id}` → consulta status  
+
+Persistência  
+- Banco SQL próprio  
+- Tabela `Orders` com colunas: `Id`, `CustomerId`, `Total`, `Status`, `Timestamp`  
+- Tabela `OrderItems`  
+
+Eventos  
+- **Producer** de:  
+  - `PedidoCriado` (quando o cliente confirma)  
+  - `PedidoCancelado` (antes do preparo iniciar)  
+- **Consumer** de:  
+  - `PedidoAceito`  
+  - `PedidoRecusado`  
+
+---
+
+### 4. Cozinha MS
+
+Responsabilidades  
+- Consumo de novos pedidos para triagem  
+- Fluxo de aceite ou rejeição de pedidos  
+- Publicação de eventos de decisão para atualização de status  
+
+Endpoints  
+- `GET /api/cozinha/pedidos` → lista pedidos pendentes (Consumer de `PedidoCriado`)  
+- `POST /api/cozinha/pedidos/{id}/decisao` → aceita ou recusa (Producer: `PedidoAceito` ou `PedidoRecusado`)  
+
+Persistência  
+- Banco SQL separado  
+- Tabela `KitchenOrders` (espelho de `Orders`)  
+- Tabela `DecisionLogs`  
+
+Eventos  
+- **Consumer** de:  
+  - `PedidoCriado`  
+  - `PedidoCancelado`  
+- **Producer** de:  
+  - `PedidoAceito`  
+  - `PedidoRecusado`  
+
+
