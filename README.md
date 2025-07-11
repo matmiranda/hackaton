@@ -13,7 +13,7 @@
 
 ## Linguagem Ubíqua
 
-This project leverages a shared vocabulary between developers and domain experts to ensure clarity and alignment:
+Este projeto utiliza um vocabulário compartilhado entre desenvolvedores e especialistas de domínio para garantir clareza e alinhamento:
 
 - Cliente (Customer)  
 - Funcionário (Employee)  
@@ -129,8 +129,6 @@ This project leverages a shared vocabulary between developers and domain experts
 - Cardápio Context: definição e edição de itens  
 - Cozinha Context: aceitação e rejeição de pedidos  
 - Atendimento Context: balcão, drive-thru, delivery  
-
-O mapeamento de contextos garante que cada parte do sistema tenha responsabilidades bem definidas e minimize dependências entre equipes de desenvolvimento.
 
 ---
 
