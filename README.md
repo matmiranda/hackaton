@@ -2,11 +2,135 @@
 
 ## Índice
 
+- [Linguagem Ubíqua](#)
 - [Desenho da Solução MVP](#desenho-da-solução-mvp)  
 - [Diagrama da Arquitetura da Solução (DDD)](#diagrama-da-arquitetura-da-solução-ddd)  
 - [Justificativa Técnica das Decisões Arquiteturais](#justificativa-técnica-das-decisões-arquiteturais)
 - [Detalhamento dos microsserviços](#detalhamento-dos-microsserviços)
 - [Script Mysql](#script-mysql--fasttech-foods)
+
+---
+
+## Linguagem Ubíqua
+
+This project leverages a shared vocabulary between developers and domain experts to ensure clarity and alignment:
+
+- Cliente (Customer)  
+- Funcionário (Employee)  
+- Gerente (Manager)  
+- Cardápio (Menu)  
+- Pedido (Order)  
+- Entrega (Delivery)  
+- Autenticação (Authentication)  
+- Disponibilidade (Availability)  
+
+---
+
+## System Contexts
+
+### Client Side
+
+- Cadastro do Cliente: registro via e-mail ou CPF  
+- Autenticação do Cliente: e-mail ou CPF + senha  
+- Catálogo Online: visualização e busca de produtos  
+- Montagem de Pedido: seleção de itens, cálculo de total, escolha de modalidade de entrega  
+
+### Employee Side
+
+- Autenticação do Funcionário: e-mail corporativo + senha  
+- Gerência de Cardápio: cadastrar, editar nome, descrição, preço e disponibilidade  
+- Equipe de Cozinha: recepção de pedidos, opção de aceitar ou recusar  
+
+---
+
+## Actors
+
+- Chefe da Cozinha  
+- Gerente do FastTech Foods  
+- Atendente (Balcão)  
+- Atendente (Drive-Thru)  
+- Entregador (Delivery)  
+
+---
+
+## Features
+
+### Cliente
+
+1. Cadastro de conta  
+2. Login via e-mail ou CPF  
+3. Busca e filtragem de produtos (lanche, sobremesa, bebida)  
+4. Montagem de pedido e visualização de total  
+5. Seleção de modalidade de entrega (balcão, drive-thru, delivery)  
+
+### Funcionário
+
+1. Login com e-mail corporativo  
+2. Gerente: gerenciamento de itens do cardápio  
+3. Cozinha: visualização e tratamento de pedidos  
+
+---
+
+## Menu de Produtos
+
+### Lanches (Hambúrguer)
+
+| Item               | Ingredientes                                                                 |
+|--------------------|-------------------------------------------------------------------------------|
+| X Bacon            | Alface, Tomate, Hambúrguer, Presunto, Mussarela, Bacon                        |
+| Bacon Especial     | Alface, Tomate, Batata Palha, Milho, Hambúrguer, Presunto, Mussarela, Bacon   |
+| X-Frango           | Alface, Tomate, Batata Palha, Milho, Filé de Frango, Presunto, Mussarela, Bacon |
+| Frango Especial    | Alface, Tomate, Batata Palha, Milho, Filé de Frango, Presunto, Mussarela, Bacon, Salsicha, Ovo |
+| Especiais          | Alface, Tomate, Batata Palha, Milho, Hambúrguer, Mussarela, Bacon             |
+| Bacon Mega         | Alface, Tomate, Batata Palha, Milho, Hambúrguer, Presunto, Mussarela, Bacon, Salsicha, Ovo |
+| X-Frango Turbo     | Alface, Tomate, Batata Palha, Milho, Filé de Frango, Presunto, Mussarela, Bacon |
+
+### Esfihas
+
+| Item         | Ingredientes            |
+|--------------|-------------------------|
+| Carne Seca   | Carne, Mussarela        |
+| Calabresa    | Calabresa, Cebola       |
+| Bauru        | Presunto, Queijo, Tomate|
+| Pizza        | Queijo, Tomate, Orégano |
+| Bacon        | Bacon, Queijo           |
+| Atum         | Atum, Cebola            |
+| Dois Queijos | Mussarela, Requeijão    |
+
+### Sobremesas (Sorvete)
+
+| Item                  | Ingredientes             |
+|-----------------------|--------------------------|
+| Ice Cream             | Vanilla                  |
+| Chocolate             | Chocolate                |
+| Strawberry            | Morango, Calda de Morango|
+| Napolitano            | Morango, Chocolate       |
+| Baunilha c/ Chocolate | Baunilha, Chocolate      |
+| Brigadeiro            | Chocolate, Brigadeiro    |
+| Maracujá              | Maracujá                 |
+
+### Bebidas
+
+| Item                       | Observações |
+|----------------------------|-------------|
+| Água Mineral com Gás       | —           |
+| Água Mineral sem Gás       | —           |
+| Schweppes Citrus           | —           |
+| Coco Verde                 | —           |
+| Coca-Cola Lata             | —           |
+| Heineken Lata              | —           |
+| Skol Lata                  | —           |
+
+---
+
+## Bounded Contexts & Context Map
+
+- Cliente Context: cadastro, busca, pedido  
+- Cardápio Context: definição e edição de itens  
+- Cozinha Context: aceitação e rejeição de pedidos  
+- Atendimento Context: balcão, drive-thru, delivery  
+
+O mapeamento de contextos garante que cada parte do sistema tenha responsabilidades bem definidas e minimize dependências entre equipes de desenvolvimento.
 
 ---
 
