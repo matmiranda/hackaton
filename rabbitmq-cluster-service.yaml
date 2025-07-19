@@ -4,20 +4,23 @@ metadata:
   name: rabbitmq
   namespace: rabbitmq-system
 spec:
-  replicas: 3
+  replicas: 1
   resources:
     requests:
-      memory: "1Gi"
-      cpu: "500m"
+      memory: "500Mi"
+      cpu: "300m"
     limits:
-      memory: "2Gi"
-      cpu: "1"
+      memory: "800Mi"
+      cpu: "600m"
   persistence:
     storageClassName: default
-    storage: 10Gi
+    storage: 1Gi
   service:
     type: LoadBalancer
   rabbitmq:
     additionalPlugins:
       - rabbitmq_management
       - rabbitmq_prometheus
+    additionalConfig: |
+      default_user = user_fiap
+      default_pass = pass_fiap
