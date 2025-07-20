@@ -467,3 +467,36 @@ CREATE TABLE IF NOT EXISTS kitchen_events (
 ```
 
 
+## Curls
+
+```
+curl --location 'https://apim-fiap.azure-api.net/api/auth/register' \
+--header 'Ocp-Apim-Subscription-Key: 942dfc762bb745b6a80d42aefe26b772' \
+--header 'Content-Type: application/json' \
+--data-raw '{
+    "name": "string",
+    "email": "user@example.com",
+    "cpf": "99399158053",
+    "password": "string",
+    "role": "string",
+    "position": "string"
+}'
+
+curl --location 'https://apim-fiap.azure-api.net/api/auth/login' \
+--header 'Ocp-Apim-Subscription-Key: 942dfc762bb745b6a80d42aefe26b772' \
+--header 'Content-Type: application/json' \
+--data '{
+    "email": "string",
+    "password": "string"
+}'
+
+curl --location --request GET 'https://apim-fiap.azure-api.net//api/auth/validate' \
+--header 'Ocp-Apim-Subscription-Key: 942dfc762bb745b6a80d42aefe26b772' \
+--header 'Content-Type: application/json' \
+--header 'Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIzZjY1MGY2ZC1mMzIwLTQyMzEtYjM0My03ZWFhYTk0YzY5ZTUiLCJlbWFpbCI6InVzZXJAZXhhbXBsZS5jb20iLCJqdGkiOiJmOTQ5MTVmNS1iMTNiLTQ3ZDYtOThiMi0yM2I0NTQ3YzA3Y2UiLCJleHAiOjE3NTMwMzI1NjEsImlzcyI6IkF1dGhTZXJ2aWNlLkFwaSIsImF1ZCI6IkF1dGhTZXJ2aWNlVXNlcnMifQ.m_cAH48jW-1rf33VXQsXiySRBA_MgChGzjlLkRjwb2U' \
+--data '{
+    "email": "string",
+    "password": "string"
+}'
+```
+
