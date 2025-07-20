@@ -1,0 +1,31 @@
+name: Atualizar README
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  update-readme:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Clonar repositório
+      uses: actions/checkout@v3
+
+    - name: Verificar alterações no último commit
+      run: |
+        git log -1 --pretty=format:"%h - %an: %s" > alteracoes.txt
+
+    - name: Atualizar README
+      run: |
+        echo -e "\n## Última alteração:\n" >> README.md
+        cat alteracoes.txt >> README.md
+
+    - name: Commit e push do novo README
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add README.md
+        git commit -m "Atualização automática do README com log de alterações"
+        git push
