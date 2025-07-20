@@ -15,5 +15,5 @@ jobs:
 
     - name: Mostrar alterações do último commit
       run: |
-        echo "📝 Alterações recentes:"
+        echo "Alterações recentes:"
         git log -1 --name-only --pretty=format:"Commit: %h%nAutor: %an%nMensagem: %s%nArquivos alterados:"
