@@ -197,14 +197,28 @@ flowchart LR
     KitchenDB[(Cozinha DB)]
   end
 
-  subgraph Infraestrutura
+  subgraph "Consumer"
+    ConsumerMenu["Consumer Menu"]
+    ConsumerOrder["Consumer Order"]
+  end
+
+  subgraph "Producer"
+    ProducerMenu["Producer Menu"]
+    ProducerOrder["Producer Order"]
+  end
+
+  subgraph "Infraestrutura"
     API["API Gateway"]
-    MQ[(RabbitMQ/Kafka)]
+    MQ[(RabbitMQ)]
     Prometheus
     Grafana
   end
 
   %% Fluxo de requisições
+  ConsumerMenu --> API
+  ConsumerOrder --> API
+  ProducerMenu --> API
+  ProducerOrder --> API
   API --> AuthMS
   API --> CardMS
   API --> PedMS
@@ -224,6 +238,7 @@ flowchart LR
   %% Observabilidade
   Prometheus -->|metrics| AuthMS & CardMS & PedMS & KitchenMS
   Grafana -->|dashboards| Prometheus
+
 
 
 ```
