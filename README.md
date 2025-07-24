@@ -177,70 +177,58 @@ O MVP é composto por quatro microsserviços independentes, containerizados e or
 
 ```mermaid
 flowchart LR
-  subgraph "Contexto: Autenticação"
-    AuthMS["Auth MS"]
-    AuthDB[(Auth DB)]
+  %% Contextos / Databases
+  subgraph Autenticação
+    AuthMS[Auth MS]
+    AuthDB[(auth_db)]
   end
 
-  subgraph "Contexto: Cardápio"
-    CardMS["Cardápio MS"]
-    CardDB[(Cardápio DB)]
+  subgraph Cardápio
+    CardMS[Menu MS]
+    CardDB[(menu_db)]
   end
 
-  subgraph "Contexto: Pedidos"
-    PedMS["Pedidos MS"]
-    PedDB[(Pedidos DB)]
+  subgraph Pedidos
+    OrderMS[Order MS]
+    OrderDB[(order_db)]
   end
 
-  subgraph "Contexto: Cozinha"
-    KitchenMS["Cozinha MS"]
-    KitchenDB[(Cozinha DB)]
+  subgraph Cozinha
+    KitchenMS[Kitchen MS]
+    KitchenDB[(kitchen_db)]
   end
 
-  subgraph "Consumer"
-    ConsumerMenu["Consumer Menu"]
-    ConsumerOrder["Consumer Order"]
-  end
-
-  subgraph "Producer"
-    ProducerMenu["Producer Menu"]
-    ProducerOrder["Producer Order"]
-  end
-
-  subgraph "Infraestrutura"
-    API["API Gateway"]
+  %% Infraestrutura
+  subgraph Infraestrutura
+    API[API Gateway]
     MQ[(RabbitMQ)]
-    Prometheus
-    Grafana
+    Grafana[(Grafana)]
   end
 
-  %% Fluxo de requisições
-  ConsumerMenu --> API
-  ConsumerOrder --> API
-  ProducerMenu --> API
-  ProducerOrder --> API
+  %% Fluxos REST
   API --> AuthMS
   API --> CardMS
-  API --> PedMS
+  API --> OrderMS
+  API --> KitchenMS
 
-  %% Event Bus
-  PedMS -->|PedidoCriado / PedidoCancelado| MQ
+  %% Publicação de eventos (Producer)
+  CardMS -->|menu_item.unavailable| MQ
+  OrderMS -->|order.created / order.cancelled| MQ
+  KitchenMS -->|order.accepted / order.rejected| MQ
+
+  %% Consumo de eventos (Consumer)
+  MQ --> CardMS
   MQ --> KitchenMS
-  KitchenMS -->|PedidoAceito / PedidoRecusado| MQ
-  MQ --> PedMS
+  MQ --> OrderMS
 
   %% Persistência
   AuthMS --> AuthDB
   CardMS --> CardDB
-  PedMS --> PedDB
+  OrderMS --> OrderDB
   KitchenMS --> KitchenDB
 
   %% Observabilidade
-  Prometheus -->|metrics| AuthMS & CardMS & PedMS & KitchenMS
-  Grafana -->|dashboards| Prometheus
-
-
-
+  AuthMS & CardMS & OrderMS & KitchenMS --> Grafana
 ```
 
 # Justificativa Técnica das Decisões Arquiteturais
