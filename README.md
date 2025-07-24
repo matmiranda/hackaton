@@ -321,22 +321,6 @@ CREATE DATABASE IF NOT EXISTS kitchen_db
 ## Script MySQL – FastTech Foods
 
 ```sql
-# Bancos de Dados por Serviço
-
-## Serviços e seus Schemas
-
-| Serviço         | Database   | Tabelas              |
-|-----------------|------------|----------------------|
-| Auth Service    | `auth_db`  | `users`              |
-| Menu Service    | `menu_db`  | `menu_items`         |
-| Order Service   | `order_db` | `orders`, `order_items` |
-| Kitchen Service | `kitchen_db` | `kitchen_events`     |
-
----
-
-## 1. Criação dos Databases
-
-```sql
 CREATE DATABASE IF NOT EXISTS auth_db
   CHARACTER SET utf8mb4
   COLLATE utf8mb4_unicode_ci;
