@@ -285,10 +285,77 @@ flowchart LR
 - Role-based Access Control (RBAC) no Gateway
 ---
 
+# Bancos de Dados por Serviço
+
+## Serviços e seus Schemas
+
+| Serviço         | Database   | Tabelas              |
+|-----------------|------------|----------------------|
+| Auth Service    | `auth_db`  | `users`              |
+| Menu Service    | `menu_db`  | `menu_items`         |
+| Order Service   | `order_db` | `orders`, `order_items` |
+| Kitchen Service | `kitchen_db` | `kitchen_events`     |
+
+
+```sql
+CREATE DATABASE IF NOT EXISTS auth_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+CREATE DATABASE IF NOT EXISTS menu_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+CREATE DATABASE IF NOT EXISTS order_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+CREATE DATABASE IF NOT EXISTS kitchen_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+```
+
+---
+
+
 ## Script MySQL – FastTech Foods
 
 ```sql
--- 1. Tabela users
+# Bancos de Dados por Serviço
+
+## Serviços e seus Schemas
+
+| Serviço         | Database   | Tabelas              |
+|-----------------|------------|----------------------|
+| Auth Service    | `auth_db`  | `users`              |
+| Menu Service    | `menu_db`  | `menu_items`         |
+| Order Service   | `order_db` | `orders`, `order_items` |
+| Kitchen Service | `kitchen_db` | `kitchen_events`     |
+
+---
+
+## 1. Criação dos Databases
+
+```sql
+CREATE DATABASE IF NOT EXISTS auth_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+CREATE DATABASE IF NOT EXISTS menu_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+CREATE DATABASE IF NOT EXISTS order_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+CREATE DATABASE IF NOT EXISTS kitchen_db
+  CHARACTER SET utf8mb4
+  COLLATE utf8mb4_unicode_ci;
+
+
+USE auth_db;
+
 CREATE TABLE IF NOT EXISTS users (
   id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name          VARCHAR(100)       NOT NULL,
@@ -301,16 +368,16 @@ CREATE TABLE IF NOT EXISTS users (
                    'GERENTE',
                    'COZINHEIRO'
                  )                NOT NULL,
-  created_at    TIMESTAMP          NOT NULL
-                                 DEFAULT CURRENT_TIMESTAMP,
-  updated_at    TIMESTAMP          NOT NULL
-                                 DEFAULT CURRENT_TIMESTAMP
+  created_at    TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP
                                  ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
--- 2. Tabela menu_items
+
+USE menu_db;
+
 CREATE TABLE IF NOT EXISTS menu_items (
   id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   name        VARCHAR(150)      NOT NULL,
@@ -321,19 +388,18 @@ CREATE TABLE IF NOT EXISTS menu_items (
                   'SOBREMESAS',
                   'BEBIDAS'
                 )               NOT NULL,
-  available   BOOLEAN           NOT NULL
-                                 DEFAULT TRUE,
-  created_at  TIMESTAMP          NOT NULL
-                                 DEFAULT CURRENT_TIMESTAMP,
-  updated_at  TIMESTAMP          NOT NULL
-                                 DEFAULT CURRENT_TIMESTAMP
+  available   BOOLEAN           NOT NULL DEFAULT TRUE,
+  created_at  TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP
                                  ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_menu_meal_type (meal_type)
 ) ENGINE=InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
--- 3. Tabela orders
+
+USE order_db;
+
 CREATE TABLE IF NOT EXISTS orders (
   id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   customer_id      BIGINT UNSIGNED NOT NULL,
@@ -348,63 +414,51 @@ CREATE TABLE IF NOT EXISTS orders (
                       'EM_PREPARO',
                       'PRONTO',
                       'CANCELADO'
-                    )               NOT NULL
-                                 DEFAULT 'PENDENTE',
+                    )               NOT NULL DEFAULT 'PENDENTE',
   cancel_reason    TEXT,
-  created_at       TIMESTAMP          NOT NULL
-                                 DEFAULT CURRENT_TIMESTAMP,
-  updated_at       TIMESTAMP          NOT NULL
-                                 DEFAULT CURRENT_TIMESTAMP
+  created_at       TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP
                                  ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (customer_id)
-    REFERENCES users(id)
-    ON DELETE RESTRICT,
-  INDEX idx_orders_status        (status),
-  INDEX idx_orders_created       (created_at),
-  INDEX idx_orders_customer_status (customer_id, status)
+  INDEX idx_orders_status         (status),
+  INDEX idx_orders_created        (created_at),
+  INDEX idx_orders_customer_status(customer_id, status)
 ) ENGINE=InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
--- 4. Tabela order_items
+
 CREATE TABLE IF NOT EXISTS order_items (
   id             BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   order_id       BIGINT UNSIGNED NOT NULL,
   menu_item_id   BIGINT UNSIGNED NOT NULL,
   quantity       INT UNSIGNED      NOT NULL CHECK (quantity > 0),
   price_at_order DECIMAL(10,2)     NOT NULL CHECK (price_at_order >= 0),
-  total_item     DECIMAL(10,2)
-                 GENERATED ALWAYS
-                 AS (quantity * price_at_order) STORED,
-  created_at     TIMESTAMP          NOT NULL
-                                 DEFAULT CURRENT_TIMESTAMP,
+  total_item     DECIMAL(10,2) GENERATED ALWAYS AS (quantity * price_at_order) STORED,
+  created_at     TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (order_id)
-    REFERENCES orders(id)
-    ON DELETE CASCADE,
-  FOREIGN KEY (menu_item_id)
-    REFERENCES menu_items(id)
-    ON DELETE RESTRICT,
-  INDEX idx_order_items_menu  (menu_item_id),
-  INDEX idx_order_items_order (order_id)
+    REFERENCES orders(id) ON DELETE CASCADE,
+  INDEX idx_order_items_order (order_id),
+  INDEX idx_order_items_menu  (menu_item_id)
 ) ENGINE=InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
--- 5. Tabela kitchen_events
+
+USE kitchen_db;
+
 CREATE TABLE IF NOT EXISTS kitchen_events (
-  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  order_id    BIGINT UNSIGNED NOT NULL,
-  action      ENUM('ACEITO','RECUSADO') NOT NULL,
+  id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id      BIGINT UNSIGNED NOT NULL,
+  action        ENUM('ACEITO','RECUSADO') NOT NULL,
   justification TEXT,
-  created_at  TIMESTAMP          NOT NULL
-                                 DEFAULT CURRENT_TIMESTAMP,
+  created_at    TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
   FOREIGN KEY (order_id)
-    REFERENCES orders(id)
-    ON DELETE CASCADE,
+    REFERENCES order_db.orders(id) ON DELETE CASCADE,
   INDEX idx_kitchen_events_order (order_id)
 ) ENGINE=InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+
 
 ```
 
