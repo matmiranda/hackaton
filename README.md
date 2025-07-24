@@ -296,25 +296,6 @@ flowchart LR
 | Order Service   | `order_db` | `orders`, `order_items` |
 | Kitchen Service | `kitchen_db` | `kitchen_events`     |
 
-
-```sql
-CREATE DATABASE IF NOT EXISTS auth_db
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-CREATE DATABASE IF NOT EXISTS menu_db
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-CREATE DATABASE IF NOT EXISTS order_db
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-
-CREATE DATABASE IF NOT EXISTS kitchen_db
-  CHARACTER SET utf8mb4
-  COLLATE utf8mb4_unicode_ci;
-```
-
 ---
 
 
