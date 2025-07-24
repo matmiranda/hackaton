@@ -283,201 +283,128 @@ flowchart LR
 - JWT para autenticação stateless  
 - Criptografia em repouso e em trânsito  
 - Role-based Access Control (RBAC) no Gateway
-
----
-
-## Detalhamento dos Microsserviços
-
-A seguir, a função, principais endpoints, persistência e eventos de cada microsserviço do MVP.
-
----
-
-### 1. Auth MS
-
-Responsabilidades  
-- Autenticação de funcionários (e-mail corporativo + senha) e clientes (CPF ou e-mail + senha)  
-- Emissão e validação de tokens JWT  
-- Refresh de tokens  
-
-Endpoints  
-- `POST /api/auth/login` → retorna access + refresh token  
-- `POST /api/auth/refresh` → gera novo access token  
-- `POST /api/auth/logout` → invalida refresh token  
-
-Persistência  
-- Banco SQL (por exemplo, Mysql)  
-- Tabela `Users` (camada de identidade)  
-- Tabela `RefreshTokens`  
-
-Eventos  
-- Não produz nem consome eventos de domínio via MQ  
-
----
-
-### 2. Cardápio MS
-
-Responsabilidades  
-- CRUD de itens de menu (nome, descrição, preço, disponibilidade)  
-- Validação de regras de negócio (preço ≥ 0, nome não vazio)  
-
-Endpoints  
-- `GET /api/cardapio` → lista itens com filtros (tipo de refeição)  
-- `GET /api/cardapio/{id}` → detalhes de item  
-- `POST /api/cardapio` → cria novo item  
-- `PUT /api/cardapio/{id}` → edita item existente  
-- `DELETE /api/cardapio/{id}` → desativa item  
-
-Persistência  
-- Banco SQL dedicado  
-- Tabela `MenuItems`  
-
-Eventos  
-- Não produz nem consome eventos de domínio via MQ  
-
----
-
-### 3. Pedidos MS
-
-Responsabilidades  
-- Montagem, confirmação e cancelamento de pedidos  
-- Cálculo de total e validação de disponibilidade  
-- Publicação de eventos de pedido no barramento de mensagens  
-
-Endpoints  
-- `POST /api/pedidos` → cria pedido (Producer: `PedidoCriado`)  
-- `PATCH /api/pedidos/{id}/cancel` → cancela pedido (Producer: `PedidoCancelado`)  
-- `GET /api/pedidos/{id}` → consulta status  
-
-Persistência  
-- Banco SQL próprio  
-- Tabela `Orders` com colunas: `Id`, `CustomerId`, `Total`, `Status`, `Timestamp`  
-- Tabela `OrderItems`  
-
-Eventos  
-- **Producer** de:  
-  - `PedidoCriado` (quando o cliente confirma)  
-  - `PedidoCancelado` (antes do preparo iniciar)  
-- **Consumer** de:  
-  - `PedidoAceito`  
-  - `PedidoRecusado`  
-
----
-
-### 4. Cozinha MS
-
-Responsabilidades  
-- Consumo de novos pedidos para triagem  
-- Fluxo de aceite ou rejeição de pedidos  
-- Publicação de eventos de decisão para atualização de status  
-
-Endpoints  
-- `GET /api/cozinha/pedidos` → lista pedidos pendentes (Consumer de `PedidoCriado`)  
-- `POST /api/cozinha/pedidos/{id}/decisao` → aceita ou recusa (Producer: `PedidoAceito` ou `PedidoRecusado`)  
-
-Persistência  
-- Banco SQL separado  
-- Tabela `KitchenOrders` (espelho de `Orders`)  
-- Tabela `DecisionLogs`  
-
-Eventos  
-- **Consumer** de:  
-  - `PedidoCriado`  
-  - `PedidoCancelado`  
-- **Producer** de:  
-  - `PedidoAceito`  
-  - `PedidoRecusado` 
-
 ---
 
 ## Script MySQL – FastTech Foods
 
 ```sql
--- 1. Usuários (autenticação)
-CREATE TABLE IF NOT EXISTS user (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(100) NOT NULL,
-  email VARCHAR(255) NOT NULL UNIQUE,
-  cpf CHAR(11) UNIQUE,
-  password_hash VARCHAR(255) NOT NULL,
-  role ENUM('CLIENTE','ATENDENTE','GERENTE','COZINHEIRO') NOT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP 
-    DEFAULT CURRENT_TIMESTAMP 
-    ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB;
+-- 1. Tabela users
+CREATE TABLE IF NOT EXISTS users (
+  id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name          VARCHAR(100)       NOT NULL,
+  email         VARCHAR(255)       NOT NULL UNIQUE,
+  cpf           CHAR(11)           UNIQUE,
+  password_hash VARCHAR(255)       NOT NULL,
+  role          ENUM(
+                   'CLIENTE',
+                   'ATENDENTE',
+                   'GERENTE',
+                   'COZINHEIRO'
+                 )                NOT NULL,
+  created_at    TIMESTAMP          NOT NULL
+                                 DEFAULT CURRENT_TIMESTAMP,
+  updated_at    TIMESTAMP          NOT NULL
+                                 DEFAULT CURRENT_TIMESTAMP
+                                 ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
 
-
--- 2. Itens de Cardápio
+-- 2. Tabela menu_items
 CREATE TABLE IF NOT EXISTS menu_items (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  name VARCHAR(150) NOT NULL,
+  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name        VARCHAR(150)      NOT NULL,
   description TEXT,
-  price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
-  meal_type ENUM('LANCHES','SOBREMESAS','BEBIDAS') NOT NULL,
-  available BOOLEAN NOT NULL DEFAULT TRUE,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL 
-    DEFAULT CURRENT_TIMESTAMP 
-    ON UPDATE CURRENT_TIMESTAMP,
+  price       DECIMAL(10,2)     NOT NULL CHECK (price >= 0),
+  meal_type   ENUM(
+                  'LANCHES',
+                  'SOBREMESAS',
+                  'BEBIDAS'
+                )               NOT NULL,
+  available   BOOLEAN           NOT NULL
+                                 DEFAULT TRUE,
+  created_at  TIMESTAMP          NOT NULL
+                                 DEFAULT CURRENT_TIMESTAMP,
+  updated_at  TIMESTAMP          NOT NULL
+                                 DEFAULT CURRENT_TIMESTAMP
+                                 ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_menu_meal_type (meal_type)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
 
-
--- 3. Pedidos
+-- 3. Tabela orders
 CREATE TABLE IF NOT EXISTS orders (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  customer_id BIGINT UNSIGNED NOT NULL,
-  delivery_method 
-    ENUM('BALCAO','DRIVE_THRU','DELIVERY') NOT NULL,
-  total DECIMAL(10,2) NOT NULL CHECK (total >= 0),
-  status 
-    ENUM('PENDENTE','EM_PREPARO','PRONTO','CANCELADO') 
-    NOT NULL DEFAULT 'PENDENTE',
-  cancel_reason TEXT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP NOT NULL 
-    DEFAULT CURRENT_TIMESTAMP 
-    ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (customer_id) 
-    REFERENCES users(id) 
+  id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  customer_id      BIGINT UNSIGNED NOT NULL,
+  delivery_method  ENUM(
+                      'BALCAO',
+                      'DRIVE_THRU',
+                      'DELIVERY'
+                    )               NOT NULL,
+  total            DECIMAL(10,2)     NOT NULL CHECK (total >= 0),
+  status           ENUM(
+                      'PENDENTE',
+                      'EM_PREPARO',
+                      'PRONTO',
+                      'CANCELADO'
+                    )               NOT NULL
+                                 DEFAULT 'PENDENTE',
+  cancel_reason    TEXT,
+  created_at       TIMESTAMP          NOT NULL
+                                 DEFAULT CURRENT_TIMESTAMP,
+  updated_at       TIMESTAMP          NOT NULL
+                                 DEFAULT CURRENT_TIMESTAMP
+                                 ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (customer_id)
+    REFERENCES users(id)
     ON DELETE RESTRICT,
-  INDEX idx_orders_status (status),
-  INDEX idx_orders_created (created_at)
-) ENGINE=InnoDB;
+  INDEX idx_orders_status        (status),
+  INDEX idx_orders_created       (created_at),
+  INDEX idx_orders_customer_status (customer_id, status)
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
 
-
--- 4. Itens do Pedido
+-- 4. Tabela order_items
 CREATE TABLE IF NOT EXISTS order_items (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  order_id BIGINT UNSIGNED NOT NULL,
-  menu_item_id BIGINT UNSIGNED NOT NULL,
-  quantity INT UNSIGNED NOT NULL CHECK (quantity > 0),
-  price_at_order DECIMAL(10,2) NOT NULL CHECK (price_at_order >= 0),
-  total_item DECIMAL(10,2) 
-    GENERATED ALWAYS AS (quantity * price_at_order) STORED,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (order_id) 
-    REFERENCES orders(id) 
+  id             BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id       BIGINT UNSIGNED NOT NULL,
+  menu_item_id   BIGINT UNSIGNED NOT NULL,
+  quantity       INT UNSIGNED      NOT NULL CHECK (quantity > 0),
+  price_at_order DECIMAL(10,2)     NOT NULL CHECK (price_at_order >= 0),
+  total_item     DECIMAL(10,2)
+                 GENERATED ALWAYS
+                 AS (quantity * price_at_order) STORED,
+  created_at     TIMESTAMP          NOT NULL
+                                 DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_id)
+    REFERENCES orders(id)
     ON DELETE CASCADE,
-  FOREIGN KEY (menu_item_id) 
-    REFERENCES menu_items(id) 
+  FOREIGN KEY (menu_item_id)
+    REFERENCES menu_items(id)
     ON DELETE RESTRICT,
-  INDEX idx_order_items_menu (menu_item_id),
+  INDEX idx_order_items_menu  (menu_item_id),
   INDEX idx_order_items_order (order_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
 
-
--- 5. Eventos da Cozinha (aceite ou recusa)
+-- 5. Tabela kitchen_events
 CREATE TABLE IF NOT EXISTS kitchen_events (
-  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  order_id BIGINT UNSIGNED NOT NULL,
-  action ENUM('ACEITO','RECUSADO') NOT NULL,
-  justification TEXT NULL,
-  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (order_id) 
-    REFERENCES orders(id) 
+  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  order_id    BIGINT UNSIGNED NOT NULL,
+  action      ENUM('ACEITO','RECUSADO') NOT NULL,
+  justification TEXT,
+  created_at  TIMESTAMP          NOT NULL
+                                 DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (order_id)
+    REFERENCES orders(id)
     ON DELETE CASCADE,
   INDEX idx_kitchen_events_order (order_id)
-) ENGINE=InnoDB;
+) ENGINE=InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
 
 ```
 
