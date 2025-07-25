@@ -309,24 +309,33 @@ CREATE DATABASE IF NOT EXISTS kitchen_db
 
 USE auth_db;
 
-CREATE TABLE IF NOT EXISTS users (
-  id            BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  name          VARCHAR(100)       NOT NULL,
-  email         VARCHAR(255)       NOT NULL UNIQUE,
-  cpf           CHAR(11)           UNIQUE,
-  password_hash VARCHAR(255)       NOT NULL,
-  role          ENUM(
-                   'CLIENTE',
-                   'ATENDENTE',
-                   'GERENTE',
-                   'COZINHEIRO'
-                 )                NOT NULL,
-  created_at    TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at    TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP
-                                 ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=InnoDB
-  DEFAULT CHARSET = utf8mb4
-  COLLATE = utf8mb4_unicode_ci;
+CREATE TABLE `user_roles` (
+  `id` TINYINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(50) NOT NULL,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name_unique` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+INSERT INTO `user_roles` (`name`) VALUES 
+('CLIENTE'),
+('ATENDENTE'),
+('GERENTE'),
+('COZINHEIRO');
+
+CREATE TABLE `users` (
+  `id` BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  `name` VARCHAR(100) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `email` VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `cpf` CHAR(11) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `password_hash` VARCHAR(255) COLLATE utf8mb4_unicode_ci NOT NULL,
+  `role_id` TINYINT UNSIGNED NOT NULL,
+  `created_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `email` (`email`),
+  UNIQUE KEY `cpf` (`cpf`),
+  FOREIGN KEY (`role_id`) REFERENCES `user_roles`(`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 
 USE menu_db;
