@@ -331,24 +331,38 @@ CREATE TABLE IF NOT EXISTS users (
 
 USE menu_db;
 
-CREATE TABLE IF NOT EXISTS menu_items (
-  id          BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-  name        VARCHAR(150)      NOT NULL,
-  description TEXT,
-  price       DECIMAL(10,2)     NOT NULL CHECK (price >= 0),
-  meal_type   ENUM(
-                  'LANCHES',
-                  'SOBREMESAS',
-                  'BEBIDAS'
-                )               NOT NULL,
-  available   BOOLEAN           NOT NULL DEFAULT TRUE,
-  created_at  TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at  TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP
-                                 ON UPDATE CURRENT_TIMESTAMP,
-  INDEX idx_menu_meal_type (meal_type)
+-- Tabela de tipos de refeição
+CREATE TABLE IF NOT EXISTS meal_types (
+  id TINYINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  code VARCHAR(50) NOT NULL UNIQUE,    -- Ex: 'LANCHES', 'BEBIDAS'
+  name VARCHAR(100) NOT NULL,          -- Ex: 'Lanches', 'Bebidas'
+  description TEXT
 ) ENGINE=InnoDB
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
+
+-- Tabela principal do cardápio
+CREATE TABLE IF NOT EXISTS menu_items (
+  id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(150) NOT NULL,
+  description TEXT,
+  price DECIMAL(10,2) NOT NULL CHECK (price >= 0),
+  meal_type_id TINYINT UNSIGNED NOT NULL,
+  available BOOLEAN NOT NULL DEFAULT TRUE,
+  image_url VARCHAR(255),
+  tags JSON,
+  calories INT UNSIGNED,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                                 ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (meal_type_id) REFERENCES meal_types(id),
+  INDEX idx_menu_meal_type (meal_type_id),
+  INDEX idx_menu_available (available),
+  INDEX idx_menu_price (price)
+) ENGINE = InnoDB
+  DEFAULT CHARSET = utf8mb4
+  COLLATE = utf8mb4_unicode_ci;
+
 
 
 USE order_db;
@@ -356,22 +370,12 @@ USE order_db;
 CREATE TABLE IF NOT EXISTS orders (
   id               BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
   customer_id      BIGINT UNSIGNED NOT NULL,
-  delivery_method  ENUM(
-                      'BALCAO',
-                      'DRIVE_THRU',
-                      'DELIVERY'
-                    )               NOT NULL,
-  total            DECIMAL(10,2)     NOT NULL CHECK (total >= 0),
-  status           ENUM(
-                      'PENDENTE',
-                      'EM_PREPARO',
-                      'PRONTO',
-                      'CANCELADO'
-                    )               NOT NULL DEFAULT 'PENDENTE',
+  delivery_method  ENUM('BALCAO','DRIVE_THRU','DELIVERY') NOT NULL,
+  total            DECIMAL(10,2) NOT NULL CHECK (total >= 0),
+  status           ENUM('PENDENTE','EM_PREPARO','PRONTO','CANCELADO') NOT NULL DEFAULT 'PENDENTE',
   cancel_reason    TEXT,
-  created_at       TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  updated_at       TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP
-                                 ON UPDATE CURRENT_TIMESTAMP,
+  created_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
   INDEX idx_orders_status         (status),
   INDEX idx_orders_created        (created_at),
   INDEX idx_orders_customer_status(customer_id, status)
@@ -387,9 +391,14 @@ CREATE TABLE IF NOT EXISTS order_items (
   quantity       INT UNSIGNED      NOT NULL CHECK (quantity > 0),
   price_at_order DECIMAL(10,2)     NOT NULL CHECK (price_at_order >= 0),
   total_item     DECIMAL(10,2) GENERATED ALWAYS AS (quantity * price_at_order) STORED,
-  created_at     TIMESTAMP          NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  created_at     TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
   FOREIGN KEY (order_id)
     REFERENCES orders(id) ON DELETE CASCADE,
+
+  FOREIGN KEY (menu_item_id)
+    REFERENCES menu_db.menu_items(id),
+
   INDEX idx_order_items_order (order_id),
   INDEX idx_order_items_menu  (menu_item_id)
 ) ENGINE=InnoDB
