@@ -350,6 +350,13 @@ CREATE TABLE IF NOT EXISTS meal_types (
   DEFAULT CHARSET = utf8mb4
   COLLATE = utf8mb4_unicode_ci;
 
+INSERT INTO meal_types (code, name, description) VALUES
+  ('LANCHES', 'Lanches', 'Sanduíches, salgados e porções rápidas'),
+  ('BEBIDAS', 'Bebidas', 'Sucos, refrigerantes, cafés e drinks'),
+  ('PRATOS_PRINCIPAIS', 'Pratos Principais', 'Refeições completas como almoços e jantares'),
+  ('SOBREMESAS', 'Sobremesas', 'Doces, bolos, sorvetes e guloseimas'),
+  ('VEGETARIANO', 'Vegetariano', 'Opções sem carne, com foco em vegetais');
+
 -- Tabela principal do cardápio
 CREATE TABLE IF NOT EXISTS menu_items (
   id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
